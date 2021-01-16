@@ -1,7 +1,8 @@
-import {all, put, call, fork, spawn, takeEvery, takeLeading, select, delay, cancelled, cancel} from 'redux-saga/effects'
+import {all, put, call, fork, take, takeEvery, takeLeading, select, delay, cancelled, cancel, race} from 'redux-saga/effects'
 import {appName} from '../../config'
 import {Record} from 'immutable'
 import {apiService} from "../../services/api";
+import {LOCATION_CHANGE} from 'connected-react-router'
 
 /**
  * Constants
@@ -14,6 +15,7 @@ export const FETCH_EVENT_START = `${prefix}/FETCH_EVENT_START`
 export const FETCH_EVENT_SUCCESS = `${prefix}/FETCH_EVENT_SUCCESS`
 export const DELETE_EVENT_REQUEST = `${prefix}/DELETE_EVENT`
 export const DELETE_EVENT_SUCCESS = `${prefix}/DELETE_EVENT_SUCCESS`
+export const STOP_BTN_CLICKED = `${prefix}/STOP_BTN_CLICKED`
 
 /**
  * Reducer
@@ -128,10 +130,13 @@ const fetchWithPolling = function * () {
 }
 
 const cancelablePolling = function * () {
-    const pollProcess = yield fork(fetchWithPolling)
-    yield delay(5000)
+    yield race({
+        polling: fetchWithPolling(),
+        timeout: delay(10000),
+//        leave: take(LOCATION_CHANGE),
+        manualStop: take(STOP_BTN_CLICKED)
+    })
 
-    yield cancel(pollProcess)
 }
 
 export function* saga() {
