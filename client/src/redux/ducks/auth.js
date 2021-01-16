@@ -45,10 +45,10 @@ const actionHandlers = {
  * Selectors
  * */
 
-const loadingSelector = state => state[moduleName].loading
-const userSelector = state => state[moduleName].user
+export const loadingSelector = state => state[moduleName].loading
+export const userSelector = state => state[moduleName].user
 
-const authorizedSelector = (state) => !!userSelector(state)
+export const authorizedSelector = (state) => !!userSelector(state)
 
 /**
  * Action Creators
@@ -88,7 +88,7 @@ export const signUp = (email, password) => (dispatch, getState) => {
  * Sagas
  * */
 
-const signUpSaga = function * (action) {
+export const signUpSaga = function * (action) {
     const {email, password} = action.payload
 //    const loading = yield select(loadingSelector)
     if (yield select(loadingSelector)) {
@@ -100,6 +100,10 @@ const signUpSaga = function * (action) {
     yield put({
         type: SIGN_UP_START
     })
+
+    console.log( put({
+        type: SIGN_UP_START
+    }))
 
     try {
         const user = yield call(apiService.signUp, email, password)
