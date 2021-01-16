@@ -1,8 +1,12 @@
 import React from 'react'
 import {Field, Form, Formik} from 'formik'
+import firebase from "firebase/app";
 
 function SignUpForm() {
-    const handleSubmit = ({ email, password }) => console.log(email, password)
+    const handleSubmit = async ({ email, password }) => {
+        const user = await firebase.auth().createUserWithEmailAndPassword(email, password)
+    }
+
     return (
         <div>
             <h3>Sign Up Form</h3>
@@ -36,6 +40,7 @@ function SignUpForm() {
                             )
                         }
                     </Field>
+                    <button type="submit">submit</button>
                 </Form>
             </Formik>
         </div>

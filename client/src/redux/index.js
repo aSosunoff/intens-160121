@@ -4,6 +4,8 @@ import logger from "redux-logger";
 import reducer from "./reducer";
 import history from "../history";
 
+import './auth'
+
 const enhancer = applyMiddleware(routerMiddleware(history), logger);
 
 export default createStore(reducer, enhancer);

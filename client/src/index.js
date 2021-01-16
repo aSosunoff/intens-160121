@@ -1,3 +1,5 @@
+import firebase from 'firebase/app'
+import {fbConfig} from './config'
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
