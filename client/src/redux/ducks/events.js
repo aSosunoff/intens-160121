@@ -1,4 +1,4 @@
-import {all, put, call, fork, spawn, takeEvery, takeLeading, select, delay} from 'redux-saga/effects'
+import {all, put, call, fork, spawn, takeEvery, takeLeading, select, delay, cancelled, cancel} from 'redux-saga/effects'
 import {appName} from '../../config'
 import {Record} from 'immutable'
 import {apiService} from "../../services/api";
@@ -114,18 +114,29 @@ const deleteEventSaga = function * (event) {
 }
 
 const fetchWithPolling = function * () {
-    for (let i=0; i < 3; i++) {
-        yield delay(2000)
-        yield call(fetchEventsSaga)
-        //yield fork(fetchEventsSaga)
+    try {
+        while (true) {
+            yield delay(2000)
+            yield call(fetchEventsSaga)
+            //yield fork(fetchEventsSaga)
+        }
+    } finally {
+        if (yield cancelled()) {
+            console.log('---', 'cancelled')
+        }
     }
+}
 
-    throw new Error('something bad happened')
+const cancelablePolling = function * () {
+    const pollProcess = yield fork(fetchWithPolling)
+    yield delay(5000)
+
+    yield cancel(pollProcess)
 }
 
 export function* saga() {
-    //yield fork(fetchWithPolling)
-    yield spawn(fetchWithPolling)
+    yield fork(cancelablePolling)
+    //yield spawn(fetchWithPolling)
 
     yield all([
         //takeEvery(DELETE_EVENT_REQUEST, deleteEventSaga),
