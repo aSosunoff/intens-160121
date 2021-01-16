@@ -1,4 +1,4 @@
-import {put,takeEvery, select, call} from 'redux-saga/effects'
+import {put,take, delay, takeLatest, select, call, all} from 'redux-saga/effects'
 import {appName} from '../../config'
 import {Record} from 'immutable'
 import {apiService} from "../../services/api";
@@ -13,6 +13,12 @@ export const SIGN_UP_REQUEST = `${prefix}/SIGN_UP_REQUEST`
 export const SIGN_UP_START = `${prefix}/SIGN_UP_START`
 export const SIGN_UP_SUCCESS = `${prefix}/SIGN_UP_SUCCESS`
 export const SIGN_UP_ERROR = `${prefix}/SIGN_UP_ERROR`
+export const SIGN_UP_ERROR_LIMIT = `${prefix}/SIGN_UP_ERROR_LIMIT`
+
+export const SIGN_IN_REQUEST = `${prefix}/SIGN_IN_REQUEST`
+export const SIGN_IN_START = `${prefix}/SIGN_IN_START`
+export const SIGN_IN_SUCCESS = `${prefix}/SIGN_IN_SUCCESS`
+export const SIGN_IN_ERROR = `${prefix}/SIGN_IN_ERROR`
 
 /**
  * Reducer
@@ -88,6 +94,55 @@ export const signUp = (email, password) => (dispatch, getState) => {
  * Sagas
  * */
 
+export function * signInSaga() {
+
+}
+
+export const signUpSaga = function * () {
+    let errorCounter = 0
+
+    while (true) {
+        if (errorCounter >= 3) {
+            yield put({
+                type: SIGN_UP_ERROR_LIMIT
+            })
+            return;
+        }
+
+        const action = yield take(SIGN_UP_REQUEST)
+
+        const {email, password} = action.payload
+
+        if (yield select(loadingSelector)) {
+            console.log('already signing up')
+            return;
+        }
+
+        //some logic
+        yield put({
+            type: SIGN_UP_START
+        })
+
+        try {
+            const user = yield call(apiService.signUp, email, password)
+
+            yield put({
+                type: SIGN_UP_SUCCESS,
+                payload: {user}
+            })
+        } catch (error) {
+            errorCounter++
+            yield put({
+                type: SIGN_UP_ERROR,
+                error
+            })
+            yield delay(Math.pow(500, errorCounter + 1))
+        }
+    }
+}
+
+
+/*
 export const signUpSaga = function * (action) {
     const {email, password} = action.payload
 //    const loading = yield select(loadingSelector)
@@ -100,10 +155,6 @@ export const signUpSaga = function * (action) {
     yield put({
         type: SIGN_UP_START
     })
-
-    console.log( put({
-        type: SIGN_UP_START
-    }))
 
     try {
         const user = yield call(apiService.signUp, email, password)
@@ -118,10 +169,12 @@ export const signUpSaga = function * (action) {
             error
         })
     }
-
-
 }
+*/
 
 export const saga = function * () {
-    yield takeEvery(SIGN_UP_REQUEST, signUpSaga)
+    yield all([
+        signUpSaga(),
+        takeLatest(SIGN_IN_REQUEST, signInSaga)
+    ])
 }
