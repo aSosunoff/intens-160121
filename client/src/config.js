@@ -1,6 +1,3 @@
-import firebase from 'firebase/app'
-import 'firebase/auth'
-
 export const appName = "intensive-16-01"
 
 export const fbConfig = {
@@ -11,5 +8,3 @@ export const fbConfig = {
     messagingSenderId: "22467506362",
     appId: "1:22467506362:web:f5fa6f260de5efbc0c1283"
 }
-
-firebase.initializeApp(fbConfig)

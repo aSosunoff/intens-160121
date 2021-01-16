@@ -1,10 +1,12 @@
 import React from 'react'
 import {Field, Form, Formik} from 'formik'
-import firebase from "firebase/app";
+import {useDispatch} from 'react-redux'
+import {signUp} from '../../redux/ducks/auth'
 
 function SignUpForm() {
+    const dispatch = useDispatch()
     const handleSubmit = async ({ email, password }) => {
-        const user = await firebase.auth().createUserWithEmailAndPassword(email, password)
+        dispatch(signUp(email, password))
     }
 
     return (
