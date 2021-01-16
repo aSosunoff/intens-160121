@@ -15,6 +15,9 @@ class ApiService {
     fetchEvents = () =>
         this.fb.firestore().collection('events').get().then(processFbCollection)
 
+    deleteEvent = (id) =>
+        this.fb.firestore().collection('events').doc(id).delete()
+
 }
 
 function processFbCollection(collection) {

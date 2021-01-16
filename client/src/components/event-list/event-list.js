@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react'
 import {useDispatch, useSelector} from 'react-redux'
-import {fetchEvents, loadingSelctor, eventsSelector} from '../../redux/ducks/events'
+import {fetchEvents, loadingSelctor, eventsSelector, deleteEvent} from '../../redux/ducks/events'
 
 
 function EventList(props) {
@@ -12,11 +12,13 @@ function EventList(props) {
         dispatch(fetchEvents())
     }, [])
 
+    const handleDelete = (id) => dispatch(deleteEvent(id))
+
     if (loading) return <h1>Loading...</h1>
 
     return (
         <ul>
-            {events.map(event => <li key={event.id}>
+            {events.map(event => <li key={event.id} onClick={() => handleDelete(event.id)}>
                     {event.title}
                 </li>
             )}

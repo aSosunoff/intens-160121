@@ -1,4 +1,4 @@
-import {all, put, call, takeEvery, select} from 'redux-saga/effects'
+import {all, put, call, fork, takeEvery, takeLeading, select, delay} from 'redux-saga/effects'
 import {appName} from '../../config'
 import {Record} from 'immutable'
 import {apiService} from "../../services/api";
@@ -12,6 +12,8 @@ const prefix = `${appName}/${moduleName}`
 export const FETCH_EVENT_REQUEST = `${prefix}/FETCH_EVENT_REQUEST`
 export const FETCH_EVENT_START = `${prefix}/FETCH_EVENT_START`
 export const FETCH_EVENT_SUCCESS = `${prefix}/FETCH_EVENT_SUCCESS`
+export const DELETE_EVENT_REQUEST = `${prefix}/DELETE_EVENT`
+export const DELETE_EVENT_SUCCESS = `${prefix}/DELETE_EVENT_SUCCESS`
 
 /**
  * Reducer
@@ -51,6 +53,11 @@ export const loadingSelctor = state => state[moduleName].loading
 
 export const fetchEvents = () => ({
     type: FETCH_EVENT_REQUEST
+})
+
+export const deleteEvent = id => ({
+    type: DELETE_EVENT_REQUEST,
+    payload: { id }
 })
 
 /**
@@ -98,8 +105,28 @@ const fetchEventsSaga = function * () {
     })
 }
 
+const deleteEventSaga = function * (event) {
+    yield call(apiService.deleteEvent, event.payload.id)
+    yield put({
+        type: DELETE_EVENT_SUCCESS
+    })
+//    yield call(fetchEventsSaga)
+}
+
+const fetchWithPolling = function * () {
+    while (true) {
+        yield delay(30000)
+        yield call(fetchEventsSaga)
+        //yield fork(fetchEventsSaga)
+    }
+}
+
 export function* saga() {
+    yield fork(fetchWithPolling)
+
     yield all([
+        //takeEvery(DELETE_EVENT_REQUEST, deleteEventSaga),
+        takeLeading(DELETE_EVENT_REQUEST, deleteEventSaga),
         takeEvery(FETCH_EVENT_REQUEST, fetchEventsSaga),
     ])
 }
