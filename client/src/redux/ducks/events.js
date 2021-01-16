@@ -1,4 +1,5 @@
 import {all, put, call, fork, take, takeEvery, takeLeading, select, delay, cancelled, cancel, race} from 'redux-saga/effects'
+import {eventChannel, buffers} from 'redux-saga'
 import {appName} from '../../config'
 import {Record} from 'immutable'
 import {apiService} from "../../services/api";
@@ -13,6 +14,7 @@ const prefix = `${appName}/${moduleName}`
 export const FETCH_EVENT_REQUEST = `${prefix}/FETCH_EVENT_REQUEST`
 export const FETCH_EVENT_START = `${prefix}/FETCH_EVENT_START`
 export const FETCH_EVENT_SUCCESS = `${prefix}/FETCH_EVENT_SUCCESS`
+export const EVENTS_SYNC = `${prefix}/EVENTS_SYNC`
 export const DELETE_EVENT_REQUEST = `${prefix}/DELETE_EVENT`
 export const DELETE_EVENT_SUCCESS = `${prefix}/DELETE_EVENT_SUCCESS`
 export const STOP_BTN_CLICKED = `${prefix}/STOP_BTN_CLICKED`
@@ -29,6 +31,7 @@ export default function reducer(state = new ReducerRecord(), action) {
     const {type, payload} = action
 
     switch (type) {
+        case EVENTS_SYNC:
         case FETCH_EVENT_SUCCESS:
             return state
                 .set('events', payload.events)
@@ -136,11 +139,43 @@ const cancelablePolling = function * () {
 //        leave: take(LOCATION_CHANGE),
         manualStop: take(STOP_BTN_CLICKED)
     })
+}
 
+
+const createMouseChannel = () => eventChannel(emit => {
+    const callback = (ev) => emit(ev)
+    window.document.addEventListener('mousemove', callback)
+
+    return () => window.document.removeEventListener('mousemove', callback)
+}, buffers.sliding(5))
+
+const mouseSaga = function * () {
+    const mouseChannel = yield call(createMouseChannel)
+
+    for (let i = 0; i < 100; i++) {
+        const ev = yield take(mouseChannel)
+        console.log(ev)
+    }
+}
+
+const createEventsListChannel = () => eventChannel(apiService.onEventsChange)
+
+const realtimeSyncSaga = function * () {
+    const chanel = yield call(createEventsListChannel)
+
+    while (true) {
+        const events = yield take(chanel)
+
+        yield put({
+            type: EVENTS_SYNC,
+            payload: { events }
+        })
+    }
 }
 
 export function* saga() {
-    yield fork(cancelablePolling)
+    yield fork(realtimeSyncSaga)
+    yield fork(mouseSaga)
     //yield spawn(fetchWithPolling)
 
     yield all([

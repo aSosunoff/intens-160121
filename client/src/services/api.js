@@ -18,6 +18,11 @@ class ApiService {
     deleteEvent = (id) =>
         this.fb.firestore().collection('events').doc(id).delete()
 
+    onEventsChange = (callback) =>
+        this.fb.firestore()
+            .collection('events')
+            .onSnapshot(data => callback(processFbCollection(data)))
+
 }
 
 function processFbCollection(collection) {
