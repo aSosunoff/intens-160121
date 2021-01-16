@@ -1,9 +1,11 @@
 import React from "react";
+import EventList from "../event-list/event-list";
 
 function AdminPage() {
   return (
     <div>
-      <h1>Admin</h1>
+      <h1>Events</h1>
+        <EventList/>
     </div>
   );
 }

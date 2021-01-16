@@ -22,6 +22,9 @@ describe('Auth Duck', () => {
                     type: SIGN_UP_START
                 }))
 
+//                expect(effect2).toEqual(call(generateId))
+//                sagaGen.next('42')
+
                 const {value: effect3} = sagaGen.next()
 
                 expect(effect3).toEqual(call(apiService.signUp, email, password))
@@ -44,6 +47,7 @@ describe('Auth Duck', () => {
                     sagaGen.next(state)
                 } else if (effect1.type === 'PUT') {
                     store.dispatch(effect1.payload.action)
+                    sagaGen.next()
                 }
 */
             });
