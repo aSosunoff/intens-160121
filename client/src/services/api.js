@@ -23,6 +23,10 @@ class ApiService {
             .collection('events')
             .onSnapshot(data => callback(processFbCollection(data)))
 
+    onAuthChange = callback =>
+        this.fb.auth()
+            .onAuthStateChanged(user => callback({ user }))
+
 }
 
 function processFbCollection(collection) {

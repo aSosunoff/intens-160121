@@ -1,4 +1,5 @@
 import {put,take, delay, takeLatest, select, call, all} from 'redux-saga/effects'
+import {eventChannel} from 'redux-saga'
 import {appName} from '../../config'
 import {Record} from 'immutable'
 import {apiService} from "../../services/api";
@@ -19,6 +20,7 @@ export const SIGN_IN_REQUEST = `${prefix}/SIGN_IN_REQUEST`
 export const SIGN_IN_START = `${prefix}/SIGN_IN_START`
 export const SIGN_IN_SUCCESS = `${prefix}/SIGN_IN_SUCCESS`
 export const SIGN_IN_ERROR = `${prefix}/SIGN_IN_ERROR`
+export const SIGN_OUT_SUCCESS = `${prefix}/SIGN_OUT_SUCCESS`
 
 /**
  * Reducer
@@ -37,10 +39,18 @@ export default function reducer(state = new ReducerRecord(), action) {
 
 const actionHandlers = {
     [SIGN_UP_START]: (state) => state.set('loading', true),
-    [SIGN_UP_SUCCESS]: (state, { payload }) => state
-        .set('user', payload.user)
-        .set('loading', false)
-        .set('error', null),
+    [SIGN_UP_SUCCESS]:
+        (state, { payload }) => state
+            .set('user', payload.user)
+            .set('loading', false)
+            .set('error', null),
+    [SIGN_IN_SUCCESS]:
+        (state, { payload }) => state
+            .set('user', payload.user)
+            .set('loading', false)
+            .set('error', null),
+    [SIGN_OUT_SUCCESS]:
+        (state) => state.set('user', null),
     [SIGN_UP_ERROR]: (state, { error }) => state.set()
         .set('user', null)
         .set('loading', false)
@@ -88,7 +98,9 @@ export const signUp = (email, password) => (dispatch, getState) => {
 */
 
 //TODO:
-//firebase.auth().onAuthStateChanged((user) => console.log(user) )
+//const unsubscribe = firebase.auth().onAuthStateChanged((user) => console.log(user) )
+// unsubscribe()
+
 
 /**
  * Sagas
@@ -96,6 +108,28 @@ export const signUp = (email, password) => (dispatch, getState) => {
 
 export function * signInSaga() {
 
+}
+
+const createAuthStateChannel = () => eventChannel(apiService.onAuthChange)
+
+const authSyncSaga = function * () {
+    const authChannel = yield call(createAuthStateChannel)
+
+    while (true) {
+        const { user } = yield take(authChannel)
+
+        if (user) {
+            yield put({
+                type: SIGN_IN_SUCCESS,
+                payload: { user }
+            })
+        } else {
+            yield put({
+                type: SIGN_OUT_SUCCESS
+            })
+        }
+
+    }
 }
 
 export const signUpSaga = function * () {
@@ -174,6 +208,7 @@ export const signUpSaga = function * (action) {
 
 export const saga = function * () {
     yield all([
+        authSyncSaga(),
         signUpSaga(),
         takeLatest(SIGN_IN_REQUEST, signInSaga)
     ])
