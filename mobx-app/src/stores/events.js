@@ -1,11 +1,17 @@
-import {makeAutoObservable} from 'mobx'
+import {action, computed, makeAutoObservable, makeObservable, observable} from 'mobx'
 import {apiService} from "../services/api";
 
 class EventsStore {
     events = []
 
     constructor(props) {
-        makeAutoObservable(this, {})
+        //makeAutoObservable(this, {})
+        makeObservable(this, {
+            setEvents: action,
+            reorder: action,
+            events: observable,
+            eventsCount: computed
+        })
     }
 
     onEventsChange() {
@@ -18,6 +24,14 @@ class EventsStore {
 
     delete(id) {
         apiService.deleteEvent(id)
+    }
+
+    reorder() {
+        this.events = this.events.sort(() =>0.5 - Math.random())
+    }
+
+    get eventsCount() {
+        return this.events.length
     }
 }
 
