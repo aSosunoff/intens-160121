@@ -1,12 +1,13 @@
 import React from 'react'
 import {observer} from 'mobx-react'
-import {counter} from '../stores/counter'
 
-function Counter(props) {
+function Counter({ counter }) {
+    const { count, increment } = counter
+
     return (
         <div>
-            <h2>{counter.count}</h2>
-            <button onClick={() => counter.increment()}>Increment</button>
+            <h2>{count}</h2>
+            <button onClick={() => increment()}>Increment</button>
         </div>
     )
 }
