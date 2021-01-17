@@ -174,7 +174,7 @@ const realtimeSyncSaga = function * () {
 }
 
 export function* saga() {
-//    yield fork(realtimeSyncSaga)
+    yield fork(realtimeSyncSaga)
 //    yield fork(mouseSaga)
     //yield spawn(fetchWithPolling)
 
