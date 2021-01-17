@@ -1,8 +1,6 @@
 import React from 'react'
-import {mount} from 'enzyme'
-import {Provider} from 'react-redux'
 import EventList from './event-list'
-import {initStore} from '../../redux'
+import {createEventListDriver} from "./event-list.driver";
 
 jest.mock('../../services/api', () => {
     const mockEvents = [{
@@ -32,27 +30,21 @@ jest.mock('../../services/api', () => {
 
 describe('EventList', () => {
     it('should render list of events', async () => {
-        const wrapper = mount(
-            <Provider store={initStore()}>
-                <EventList events={[]}/>
-            </Provider>)
+        const driver = createEventListDriver()
 
         await Promise.resolve()
-        wrapper.update()
-        expect(wrapper.find('li').length).toBe(2)
+        driver.update()
+        expect(driver.get.listItemLength()).toBe(2)
     });
 
     it('should delete event', async () => {
-        const wrapper = mount(
-            <Provider store={initStore()}>
-                <EventList events={[]}/>
-            </Provider>)
+        const driver = createEventListDriver()
 
         await Promise.resolve()
 
-        wrapper.update()
-        wrapper.find('li').at(0).simulate('click')
+        driver.update()
+        driver.when.listItemClicked(0)
 
-        expect(wrapper.find('li').length).toBe(1)
+        expect(driver.get.listItemLength()).toBe(1)
     });
 });
