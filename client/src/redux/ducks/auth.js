@@ -208,7 +208,7 @@ export const signUpSaga = function * (action) {
 
 export const saga = function * () {
     yield all([
-        authSyncSaga(),
+//        authSyncSaga(),
         signUpSaga(),
         takeLatest(SIGN_IN_REQUEST, signInSaga)
     ])

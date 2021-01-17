@@ -18,10 +18,11 @@ function EventList(props) {
 
     return (
         <ul>
-            {events.map(event => <li key={event.id} onClick={() => handleDelete(event.id)}>
+            {events.map(event => (
+                <li key={event.id} onClick={() => handleDelete(event.id)}>
                     {event.title}
                 </li>
-            )}
+            ))}
         </ul>
     )
 }
